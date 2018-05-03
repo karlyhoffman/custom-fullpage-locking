@@ -1,0 +1,10 @@
+@font-face {
+  font-family: 'BMWTypeV2Light';
+  src: url('../fonts/bmw-light/bmwl.woff2') format('woff2'),
+       url('../fonts/bmw-light/bmwl.woff') format('woff'),
+       url('../fonts/bmw-light/bmwl.ttf')  format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+$bmw-light: 'BMWTypeV2Light', sans-serif;

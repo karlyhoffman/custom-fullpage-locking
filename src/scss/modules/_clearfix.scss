@@ -1,0 +1,20 @@
+%clear {
+  content: ' ';
+  display: table;
+}
+.clear {
+  *zoom: 1;
+  &:before {
+    @extend %clear;
+  }
+  &:after {
+    @extend %clear;
+    clear: both;
+  }
+}
+
+
+// Safari Bug
+.row:before {
+  content: none;
+}

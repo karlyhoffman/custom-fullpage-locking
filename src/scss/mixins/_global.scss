@@ -1,0 +1,45 @@
+@mixin css3-prefix($property, $value) {
+  -webkit-#{$property}: #{$value};
+   -khtml-#{$property}: #{$value};
+     -moz-#{$property}: #{$value};
+      -ms-#{$property}: #{$value};
+       -o-#{$property}: #{$value};
+          #{$property}: #{$value};
+}
+
+@mixin transition($properties...) {
+
+  @if length($properties) >= 1 {
+    @include css3-prefix('transition', $properties);
+  }
+
+  @else {
+    @include css3-prefix('transition',  "all 0.2s ease-in-out 0s");
+  }
+}
+
+@mixin transform($properties...) {
+
+  @if length($properties) >= 1 {
+    @include css3-prefix('transform', $properties);
+  }
+
+}
+
+@mixin transform-origin($properties...) {
+
+  @if length($properties) >= 1 {
+    @include css3-prefix('transform-origin', $properties);
+  }
+
+}
+
+@mixin vertical-align($position: relative) {
+  position: $position;
+  top: 50%;
+  @include transform(translateY(-50%));
+}
+
+@function shade($color, $percentage) {
+  @return mix(black, $color, $percentage);
+}
