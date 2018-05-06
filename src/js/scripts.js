@@ -4,263 +4,133 @@
 
   $(function () {
 
-      //First the variables our app is going to use need to be declared
-        //References to DOM elements
-        var $window = $(window);
-        var $document = $(document);
-        //Only links that starts with #
-        var $navButtons;
-        var $navGoPrev = $(".go-prev");
-        var $navGoNext = $(".go-next");
-        var $slidesContainer = $(".slides-container");
-        var $slides = $(".slide");
-        var $currentSlide = $slides.first();
+    var $window = $(window);
+    var $document = $(document);
+    var $navGoPrev = $(".go-prev");
+    var $navGoNext = $(".go-next");
+    var $slidesContainer = $(".slides-container");
+    var $slides = $(".slide");
+    var $currentSlide = $slides.first();
 
-        // Animating flag - is our app animating
-        var isAnimating = false;
+    var isAnimating = false;
 
-        var isHorizontal = false;
-        var currentHorizontalSlide = 0;
+    var pageHeight = $window.innerHeight();
+    var pageWidth = $window.innerWidth();
 
+    var keyCodes = { UP: 38, DOWN: 40 };
 
-        //The height of the window
-        var pageHeight = $window.innerHeight();
-        var pageWidth = $window.innerWidth();
+    // goToSlide($currentSlide);
+    $window.on("resize", onResize).resize();
+    $window.on("mousewheel DOMMouseScroll", onMouseWheel);
+    $document.on("keydown", onKeyDown);
+    $navGoPrev.on("click", goToPrevSlide);
+    $navGoNext.on("click", goToNextSlide);
 
-        //Key codes for up and down arrows on keyboard. We'll be using this to navigate change slides using the keyboard
-        var keyCodes = {
-          UP: 38,
-          DOWN: 40
-        };
+    function onKeyDown(event) {
+      var PRESSED_KEY = event.keyCode;
+      if (PRESSED_KEY == keyCodes.UP) {
+        goToPrevSlide();
+        event.preventDefault();
+      } else if (PRESSED_KEY == keyCodes.DOWN) {
+        goToNextSlide();
+        event.preventDefault();
+      }
+    }
 
-        //Going to the first slide
-        goToSlide($currentSlide);
+    document.addEventListener('touchstart', handleTouchStart, false);
+    document.addEventListener('touchmove', handleTouchMove, false);
 
-        /*
-    	*   Adding event listeners
-    	* */
+    var xDown = null;
+    var yDown = null;
 
-        $window.on("resize", onResize).resize();
-        $window.on("mousewheel DOMMouseScroll", onMouseWheel);
-        $document.on("keydown", onKeyDown);
-        // $navButtons.on("click", onNavButtonClick);
-        $navGoPrev.on("click", goToPrevSlide);
-        $navGoNext.on("click", goToNextSlide);
+    function handleTouchStart(evt) {
+        xDown = evt.touches[0].clientX;
+        yDown = evt.touches[0].clientY;
+    };
 
-
-            // If Mobile
-
-              // document.addEventListener('touchstart', handleTouchStart, false);
-              // document.addEventListener('touchmove', handleTouchMove, false);
-              //
-              // var xDown = null;
-              // var yDown = null;
-              //
-              // function handleTouchStart(evt) {
-              //     xDown = evt.touches[0].clientX;
-              //     yDown = evt.touches[0].clientY;
-              // };
-              //
-              // function handleTouchMove(evt) {
-              //     if ( ! xDown || ! yDown ) {
-              //         return;
-              //     }
-              //
-              //     var xUp = evt.touches[0].clientX;
-              //     var yUp = evt.touches[0].clientY;
-              //
-              //     var xDiff = xDown - xUp;
-              //     var yDiff = yDown - yUp;
-              //
-              //     if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
-              //         if ( xDiff > 0 ) {
-              //             /* left swipe */
-              //             goToNextSlide();
-              //         } else {
-              //             /* right swipe */
-              //             goToPrevSlide();
-              //         }
-              //     } else {
-              //         if ( yDiff > 0 ) {
-              //             /* up swipe */
-              //              goToNextSlide();
-              //         } else {
-              //             /* down swipe */
-              //             goToPrevSlide();
-              //         }
-              //     }
-              //     /* reset values */
-              //     xDown = null;
-              //     yDown = null;
-              // };
-
-
-
-
-        /*
-    	*   Internal functions
-    	* */
-
-        /*
-    	*   When a button is clicked - first get the button href, and then slide to the container, if there's such a container
-    	* */
-        function onNavButtonClick(event) {
-          //The clicked button
-          var $button = $(this);
-          //The slide the button points to
-          var $slide = $($button.attr("href"));
-          //If the slide exists, we go to it
-          if ($slide.length) {
-            goToSlide($slide);
-            event.preventDefault();
-          }
+    function handleTouchMove(evt) {
+        if ( ! xDown || ! yDown ) {
+            return;
         }
 
-        /*
-    	*   Getting the pressed key. Only if it's up or down arrow, we go to prev or next slide and prevent default behaviour
-    	*   This way, if there's text input, the user is still able to fill it
-    	* */
-        function onKeyDown(event) {
-          var PRESSED_KEY = event.keyCode;
+        var xUp = evt.touches[0].clientX;
+        var yUp = evt.touches[0].clientY;
 
-          if (PRESSED_KEY == keyCodes.UP) {
-            goToPrevSlide();
-            event.preventDefault();
-          } else if (PRESSED_KEY == keyCodes.DOWN) {
-            goToNextSlide();
-            event.preventDefault();
-          }
-        }
+        var xDiff = xDown - xUp;
+        var yDiff = yDown - yUp;
 
-        /*
-    	*   When user scrolls with the mouse, we have to change slides
-    	* */
-        function onMouseWheel(event) {
-          //Normalize event wheel delta
-          var delta =
-            event.originalEvent.wheelDelta / 30 || -event.originalEvent.detail;
-          //If the user scrolled up, it goes to previous slide, otherwise - to next slide
-          if (delta < -1) {
-            goToNextSlide();
-          } else if (delta > 1) {
-            goToPrevSlide();
-          }
-          event.preventDefault();
-        }
-
-
-
-        /*
-    	*   If there's a previous slide, slide to it
-    	* */
-        function goToPrevSlide() {
-          if ($currentSlide.prev().length) {
-            goToSlide($currentSlide.prev());
-          }
-        }
-
-        /*
-    	*   If there's a next slide, slide to it
-    	* */
-        function goToNextSlide() {
-          if ($currentSlide.next().length) {
-            goToSlide($currentSlide.next());
-          }
-        }
-
-        /*
-    	*   Actual transition between slides
-    	* */
-        function goToSlide($slide) {
-          //If the slides are not changing and there's such a slide
-          if (!isAnimating && $slide.length) {
-            //setting animating flag to true
-            isAnimating = true;
-            $currentSlide = $slide;
-
-            var $nestedSlides = $($currentSlide).find('.slide');
-
-            console.log(currentHorizontalSlide);
-
-            // if ($currentSlide.hasClass('x-container')) {
-            //     isHorizontal = true;
-            // }
-
-            if ( $nestedSlides.length > 0 ) {
-                // console.log('nested slides!', $nestedSlides.first().index());
-
-                // isHorizontal = true;
-
-                if ( currentHorizontalSlide === 0 ) {
-                    TweenLite.to($slidesContainer, 1, {
-                      scrollTo: { y: pageHeight * $currentSlide.index() },
-                      onComplete: onSlideChangeEnd,
-                      onCompleteScope: this
-                    });
-
-                    currentHorizontalSlide++;
-                } else if ( currentHorizontalSlide > 0 ) {
-                    TweenLite.to($('.x-container'), 1, {
-                      scrollTo: { x: pageWidth * currentHorizontalSlide },
-                      onComplete: onSlideChangeEnd,
-                      onCompleteScope: this
-                    });
-                }
-
-
+        if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) {/*most significant*/
+            if ( xDiff > 0 ) {
+                /* left swipe */
             } else {
-                // console.log('not nested slides');
-                currentHorizontalSlide = 0;
-                // isHorizontal = false;
-                TweenLite.to($slidesContainer, 1, {
-                  scrollTo: { y: pageHeight * $currentSlide.index() },
-                  onComplete: onSlideChangeEnd,
-                  onCompleteScope: this
-                });
-
+                /* right swipe */
             }
-
-            //Animating menu items
-            // TweenLite.to($navButtons.filter(".active"), 0.5, { className: "-=active" });
-
-            // TweenLite.to(
-            //   $navButtons.filter("[href=#" + $currentSlide.attr("id") + "]"),
-            //   0.5,
-            //   { className: "+=active" }
-            // );
-          }
+        } else {
+            if ( yDiff > 0 ) {
+                /* up swipe */
+            } else {
+                /* down swipe */
+            }
         }
+        /* reset values */
+        xDown = null;
+        yDown = null;
+    };
 
-        /*
-    	*   Once the sliding is finished, we need to restore "isAnimating" flag.
-    	*   You can also do other things in this function, such as changing page title
-    	* */
-        function onSlideChangeEnd() {
-          isAnimating = false;
-        }
+    function onMouseWheel(event) {
+      var delta =
+        event.originalEvent.wheelDelta / 30 || -event.originalEvent.detail;
+      if (delta < -1) {
+        goToNextSlide();
+      } else if (delta > 1) {
+        goToPrevSlide();
+      }
+      event.preventDefault();
+    }
 
-        /*
-    	*   When user resize it's browser we need to know the new height, so we can properly align the current slide
-    	* */
-        function onResize(event) {
-          //This will give us the new height of the window
-          var newPageHeight = $window.innerHeight();
+    function goToPrevSlide() {
+      if ($currentSlide.prev().length) {
+        goToSlide($currentSlide.prev());
+      }
+    }
 
-          /*
-            *   If the new height is different from the old height ( the browser is resized vertically ), the slides are resized
-            * */
-          if (pageHeight !== newPageHeight) {
-            pageHeight = newPageHeight;
+    function goToNextSlide() {
+      if ($currentSlide.next().length) {
+        goToSlide($currentSlide.next());
+      }
+    }
 
-            //This can be done via CSS only, but fails into some old browsers, so I prefer to set height via JS
-            TweenLite.set([$slidesContainer, $slides], { height: pageHeight + "px" });
+    function goToSlide($slide) {
+      // If the slides are not changing and there's such a slide
+      if (!isAnimating && $slide.length) {
+        //setting animating flag to true
+        isAnimating = true;
+        $currentSlide = $slide;
 
-            //The current slide should be always on the top
-            TweenLite.set($slidesContainer, {
-              scrollTo: { y: pageHeight * $currentSlide.index() }
-            });
-          }
-        }
+        // Sliding to current slide
+        TweenLite.to($slidesContainer, 0.7, {
+          scrollTo: { x: pageWidth * $currentSlide.index() },
+          onComplete: onSlideChangeEnd,
+          onCompleteScope: this
+        });
+      }
+    }
+
+    function onSlideChangeEnd() {
+      isAnimating = false;
+    }
+
+    function onResize(event) {
+      var newPageWidth = $window.innerWidth();
+      if (pageWidth !== newPageWidth) {
+        pageWidth = newPageWidth;
+        TweenLite.set([$slidesContainer, $slides], { width: pageWidth + "px" });
+        TweenLite.set($slidesContainer, {
+          scrollTo: { x: pageWidth * $currentSlide.index() }
+        });
+      }
+    }
+
 
 
 
