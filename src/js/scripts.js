@@ -9,7 +9,9 @@
     var $navGoPrev = $(".go-prev");
     var $navGoNext = $(".go-next");
     var $slidesContainer = $(".slides-container");
+    var $slidesHorizontalContainer = $(".slides-container-horizontal");
     var $slides = $(".slide");
+    var $slidesHorizontal = $(".slide-horizontal");
     var $currentSlide = $slides.first();
 
     var isAnimating = false;
@@ -37,6 +39,7 @@
       }
     }
 
+    // mobile swiping
     document.addEventListener('touchstart', handleTouchStart, false);
     document.addEventListener('touchmove', handleTouchMove, false);
 
@@ -107,12 +110,20 @@
         isAnimating = true;
         $currentSlide = $slide;
 
-        // Sliding to current slide
-        TweenLite.to($slidesContainer, 0.7, {
-          scrollTo: { x: pageWidth * $currentSlide.index() },
+        // Sliding to current slide -- horizontal
+        // TweenLite.to($slidesContainer, 0.7, {
+        //   scrollTo: { x: pageWidth * $currentSlide.index() },
+        //   onComplete: onSlideChangeEnd,
+        //   onCompleteScope: this
+        // });
+
+        // //Sliding to current slide -- vertical
+        TweenLite.to($slidesContainer, 1, {
+          scrollTo: { y: pageHeight * $currentSlide.index() },
           onComplete: onSlideChangeEnd,
           onCompleteScope: this
         });
+
       }
     }
 
