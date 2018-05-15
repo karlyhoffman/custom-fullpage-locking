@@ -13,8 +13,10 @@
     var $slides = $(".slide");
     var $slidesHorizontal = $(".slide-horizontal");
     var $currentSlide = $slides.first();
+    var $currentHorizontalSlide = $slidesHorizontal.first();
 
     var isAnimating = false;
+    var isHorizontal = false;
 
     var pageHeight = $window.innerHeight();
     var pageWidth = $window.innerWidth();
@@ -110,19 +112,29 @@
         isAnimating = true;
         $currentSlide = $slide;
 
-        // Sliding to current slide -- horizontal
-        // TweenLite.to($slidesContainer, 0.7, {
-        //   scrollTo: { x: pageWidth * $currentSlide.index() },
-        //   onComplete: onSlideChangeEnd,
-        //   onCompleteScope: this
-        // });
+        if (isHorizontal) {
+          TweenLite.to($slidesHorizontalContainer, 0.7, {
+            scrollTo: { x: pageWidth * $currentHorizontalSlide.next().index() },
+            onComplete: onSlideChangeEnd,
+            onCompleteScope: this
+          });
+        } else if (  $currentSlide.is( $slidesHorizontalContainer ) ) {
+          isHorizontal = true;
 
-        // //Sliding to current slide -- vertical
-        TweenLite.to($slidesContainer, 1, {
-          scrollTo: { y: pageHeight * $currentSlide.index() },
-          onComplete: onSlideChangeEnd,
-          onCompleteScope: this
-        });
+          TweenLite.to($slidesContainer, 1, {
+            scrollTo: { y: pageHeight * $currentSlide.index() },
+            onComplete: onSlideChangeEnd,
+            onCompleteScope: this
+          });
+        } else {
+          isHorizontal = false;
+
+          TweenLite.to($slidesContainer, 1, {
+            scrollTo: { y: pageHeight * $currentSlide.index() },
+            onComplete: onSlideChangeEnd,
+            onCompleteScope: this
+          });
+        }
 
       }
     }
